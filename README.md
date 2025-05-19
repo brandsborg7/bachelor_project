@@ -4,4 +4,9 @@ NB! Not in the exact way they are represented in the workspace folder on the RPi
 the most efficient way (for the bachelor report) 
 
 Each node-folder has a package.xml, setup.py (used for building the package), as well as the Python code for the node. 
-Also included the last log-file (from the final testings 19th of May) with plots/graphs from the sensor. 
+
+Extra files included: 
+- logfile (from last final testings 19th of May)
+- Plots/graphs from the sensor data (created by the logger_node as .png files)
+- dockerfile.txt & docker-compose.yml (used to create, build & run the Docker environment)
+- config.txt file (which is the config file for the Raspberry Pi located in /boot/firmware/config.txt) 
