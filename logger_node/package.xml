@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>logger_node</name>
+  <version>0.0.0</version>
+  <description>Logger node for capturing and logging data from various components such as fans, RC ser>  <maintainer email="s377397@oslomet.no">Chris</maintainer>
+  <license>MIT</license>
+
+  <!-- ROS 2 Dependencies -->
+  <buildtool_depend>ament_python</buildtool_depend>
+  <depend>rclpy</depend>
+  <depend>sensor_msgs</depend>
+  <depend>std_msgs</depend>
+
+  <!-- Test dependencies -->
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <!-- Export for building with ament_python -->
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
+
+
+
+
+

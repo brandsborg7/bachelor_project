@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>main_node</name>
+  <version>0.0.0</version>
+  <description>Main node for controlling and managing multiple nodes such as lift, sensors, RC servo</description>
+  <maintainer email="s377397@oslomet.no">Chris</maintainer>
+  <license>MIT</license>
+
+  <!-- Build tool dependency -->
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <!-- Runtime dependencies -->
+  <depend>rclpy</depend>
+  <depend>std_msgs</depend>
+
+  <!-- Dependencies on other nodes/packages -->
+  <depend>lift_node</depend>
+  <depend>sensor_node</depend>
+  <depend>rc_servo_node</depend>
+  <depend>fan_node</depend>
+  <depend>camera_node</depend>
+
+  <!-- Test dependencies -->
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <!-- Export for ament_python build -->
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

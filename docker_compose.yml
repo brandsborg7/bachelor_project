@@ -1,0 +1,17 @@
+services:
+  ros2:
+    build: .
+    container_name: ros2_ws_container
+    privileged: true  # Gives access to GPIO, /dev, etc.
+    network_mode: host  # So ROS 2 nodes can talk directly     
+    volumes:
+      - /home/pi/ros2_ws:/ros2_ws  # Explicit path to local workspace
+      - /dev:/dev                  # Access to devices like /dev/gpiomem
+      - /sys/class/gpio:/sys/class/gpio  
+      - /mnt/usb:/media/pi/ELLAB # Access to USB-folder (and syncronized w/host folder)
+      - DISPLAY=${DISPLAY}   # Optional: to show GUI apps (if needed)
+    stdin_open: true
+    tty: true
+
+
+
