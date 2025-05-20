@@ -18,8 +18,13 @@ class MainNode(Node):
 
         # Log the node startup using ROS 2 logger
         self.get_logger().info("Main Node has been started")
+
+        # Initial variable conditions
         self.running = True
         self.shutdown_everything = False
+        self.lift_in_stopped_condition = True
+        self.lift_sequence_phase = None
+        self.sequence_active = False
 
         # Initialize the nodes (with error handling)
         self.lift_node = self.safe_init(LiftNode)
@@ -29,17 +34,12 @@ class MainNode(Node):
         self.camera1_node = self.safe_init(CameraNode, 0)
         self.camera2_node = self.safe_init(CameraNode, 2)
         
-        # Publisher for the lift command 
-        self.lift_cmd_publisher = self.create_publisher(String, 'lift_cmd', 10)
-
-        # Publisher for shutdown message to logger node
-        self.shutdown_pub = self.create_publisher(String, 'shutdown_topic', 10)
+        # Publishers
+        self.lift_cmd_publisher = self.create_publisher(String, 'lift_cmd', 10) # lift_cmd topic
+        self.shutdown_pub = self.create_publisher(String, 'shutdown_topic', 10) # shutdown_topic
 
         # Lift status subscriber (for sequence control)
         self.lift_status_sub = self.create_subscription(String, 'lift_status', self.lift_status_callback, 10)
-        self.lift_in_stopped_condition = True
-        self.lift_sequence_phase = None
-        self.sequence_active = False
 
     # Function to safely initialize nodes (w/its arguments and keyword-arguments) and handle exceptions
     def safe_init(self, class_name, *args, **kwargs):
@@ -117,8 +117,8 @@ class MainNode(Node):
         if status == "Lift stopped":
 
             # Step 5: Close the LIDs (servos), turn off fans 
-            if self.sequence_phase == 1:
-                # Lift down just finished
+            if self.sequence_phase == 1:   # Lift down just finished (STOPPED)
+                
 
                 if self.rc_servo_node:
                     self.run_thread_and_wait([
@@ -131,18 +131,20 @@ class MainNode(Node):
                 self.get_logger().info("Servos closed. Turning off fans.")
                 self.fan_node.turn_off_fans()
 
+                # Step 6: Lift up
                 if self.lift_node:
                     self.lift_node.lift_up(duration=40)
                 self.sequence_phase = 2
 
-            # Step 6 (final): Lift up, stop the sequence
-            elif self.sequence_phase == 2:
+            # Step 7 (final): stop the sequence & turn off cameras
+            elif self.sequence_phase == 2:  # Lift up just finished (STOPPED)
                 # Lift up just finished
                 self.get_logger().info("Lift up completed. Turning off cameras")
                 
                 # Stop the cameras 
                 for thread in self.camera_threads:
                     thread.join()
+
                 self.lift_in_stopped_condition = True
                 self.sequence_phase = None
                 self.sequence_active = False 
@@ -160,7 +162,6 @@ class MainNode(Node):
             return
         
         self.sequence_active = True  # Sequence is now active
-        self.lift_in_stopped_condition = False
 
         try: 
 
@@ -181,6 +182,7 @@ class MainNode(Node):
 
             # Step 3: Lift down 
             self.get_logger().info("⬇️ Lowering lift and turning on fans...")
+            self.lift_in_stopped_condition = False # Lift moving 
             self.lift_node.lift_down(duration=40)
             self.sequence_phase = 1  # So that it will go to next phase when lift stops 
             
@@ -199,17 +201,17 @@ class MainNode(Node):
         if self.fan_node: self.fan_node.shutdown()
         if self.rc_servo_node: self.rc_servo_node.shutdown()
 
-        self.running = False
+        self.running = False            # This will stop the command loop
         self.shutdown_everything = True
         self.shutdown_logger()
         rclpy.shutdown()
   
-    # Main loop for command input (sending commands to the lift through the main-terminal)
+    # Loop for command input 
     def run_command_loop(self):
         while rclpy.ok() and self.running:
             try:
-                command = input("Enter command (e.g. lift_up, lift_down, lift_stop, " \
-                "lift_test, fans_on, rc_test, rc_open, rc_close, cam_test, run_all, exit): ")
+                command = input("Enter command (e.g. lift_up, lift_down, lift_stop, lift_test, " \
+                "fans_on, rc_test, rc_open, rc_close, cam_test, run_all, exit): ")
 
                 if command == "lift_up": self.send_lift_command("lift_up")
                 elif command == "lift_down": self.send_lift_command("lift_down")
@@ -267,15 +269,16 @@ class MainNode(Node):
 
 def main(args=None):
 
-    main_node = None    # Initialize main_node to None to avoid reference before assignment
-    executor = None     # Initialize executor to None to avoid reference before assignment
-    command_thread = None  # Initialize command_thread to None to avoid reference before assignment
+    # Initialize to None to avoid reference before assignment
+    main_node = None    
+    executor = None     
+    command_thread = None  
 
     try:
         rclpy.init(args=args)  # Initialize the ROS 2 context
         main_node = MainNode()
 
-        # Bruk MultiThreadedExecutor for å spinne alle nodene
+        # MultiThreadedExecutor that spins all nodes in separate threads
         executor = MultiThreadedExecutor()
         executor.add_node(main_node)  # Add the main node to the executor
 
@@ -286,7 +289,7 @@ def main(args=None):
                 executor.add_node(node)
 
         # Add the sensor node only if at least one sensor is available
-        if main_node.sensor_node and main_node.sensor_node.sensor1 and main_node.sensor_node.sensor2:
+        if main_node.sensor_node.sensor1 or main_node.sensor_node.sensor2:
             executor.add_node(main_node.sensor_node)
         else:
             main_node.get_logger().warn("One or both sensors are not available, skipping addition to executor.")
@@ -327,7 +330,5 @@ def main(args=None):
 
             if rclpy.ok():
                 rclpy.shutdown()
-
-
 if __name__ == '__main__':
     main()
