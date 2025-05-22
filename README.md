@@ -9,4 +9,7 @@ Extra files included:
 - logfile (from last final testings 19th of May)
 - Plots/graphs from the sensor data (created by the logger_node as .png files)
 - dockerfile.txt & docker-compose.yml (used to create, build & run the Docker environment)
-- config.txt file (which is the config file for the Raspberry Pi located in /boot/firmware/config.txt) 
+- config.txt file (which is the config file for the Raspberry Pi located in /boot/firmware/config.txt)
+
+Additional: 
+- The project's BOM list is included (BOM_våk_field_flux.xlsx) 
