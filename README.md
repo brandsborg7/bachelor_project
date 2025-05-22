@@ -12,4 +12,5 @@ Extra files included:
 - config.txt file (which is the config file for the Raspberry Pi located in /boot/firmware/config.txt)
 
 Additional: 
-- The project's BOM list is included (BOM_våk_field_flux.xlsx) 
+- The project's BOM list is included (BOM_våk_field_flux.xlsx)
+- All CAD-files (technical drawings) are in the CAD-files folder
